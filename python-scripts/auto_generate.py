@@ -831,7 +831,7 @@ def main():
     constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name='GetExistingTransactorFromContext', mock_func_inputs=["ctx"], mock_func_outputs=["txObj"])
 
     utils.set_coverage_file()
-    old_coverage_contents = os.popen(f"sh {constants.RUN_COVERAGE_FILE}").read()
+    old_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
     if "--FAIL:" in old_coverage_contents:
         logging.error("fix existing UT", exc_info = True)
         raise Exception("fix existing UT")
@@ -912,7 +912,7 @@ def main():
         if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
             os.system("rm tests/test_cases/auto_generated_test_cases.go")
 
-        new_coverage_contents = os.popen(f"sh {constants.RUN_COVERAGE_FILE}").read()
+        new_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
         if "--FAIL:" in new_coverage_contents:
             logging.error("fix existing UT", exc_info = True)
             os.system("code "+constants.CWD)
