@@ -1,0 +1,14 @@
+ACTUAL = "actual  :(.*)"
+UINT64 = "(\(\*uint64\)\([0-9a-fx]*\))"
+NOT_EQUAL_OUTPUT_PARAM = "Not equal output param - out(.*), kindly check"
+VARIABLE_TYPE = "([a-zA-Z0-9]*)\s*([a-zA-Z0-9\[\]\.]*).+"
+MOCK_FILE_PATH_RECOVERED = "(at: \[)(.*)(\] \[recovered\])"
+EITHER_DO_MOCK_ON = 'Either do Mock.On\(\"(.*)\"\).Return\(\.\.\.\)'
+COVERAGE = "coverage: (\d{1,2}|\d{1,2}\.\d{1,2})% of statements in"
+MOCK_OBJECT = 's\.([0-9a-zA-Z\_]+)(Utils\.|Dao\.|ES\.|Service\.|Scripts\.)(.*)\('
+DATATYPES_JSON = "(\(\*datatypes\.JSON\)\(0x[0-9a-f]*\))"
+HEX = "(0x[0-9a-f]*)"
+INTERFACE_DECLARATION = "type (.*) interface {"
+STRUCT_DECLARATION = "type (.*) struct {"
+OTHER_INTERFACE_FUNC_CALL = r"(((\s|\()(s\.))(.*)(\.)(.*)(\()(.*)(\)))"
+IMPORT_STRCTURE = "import \(([\s\"a-z\/.\/\-\0-9\_]*)\)"

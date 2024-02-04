@@ -1,0 +1,17 @@
+Setup:
+- cd auto-ut
+- python3 config.py --setup
+
+Requirements:
+- resources.TestCase
+- proper path to lead env in config.go
+
+Unhandled Cases
+- interface type conversion. Eg: Data.(string)
+- function with filterInput, map[any_type]interface{} parameter is not handled
+- function with orchestrator
+- same function called more than once in the same function
+
+How To Run:
+syntax: autout <file_name> <interface_name> <func_name>
+Eg: autout student.go StudentService CreateStudent
