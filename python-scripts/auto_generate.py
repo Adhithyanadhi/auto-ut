@@ -812,7 +812,7 @@ def main():
     if len(sys.argv) < 3:
         raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
     constants.CWD, file_name = sys.argv[1].split('/service/v1/')
-    
+    constants.SERVICE_NAME = constants.CWD.split('/')[-1]
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
         os.system("rm tests/test_cases/auto_generated_test_cases.go")
     
