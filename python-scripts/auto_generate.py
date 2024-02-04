@@ -938,7 +938,7 @@ def main():
             logging.error(f"new coverage not found", exc_info = True)
             raise Exception(f"new coverage not found")
         
-        print(f"New coverage {new_coverage} (+{new_coverage-old_coverage}) {func_name}")
+        print(f"Coverage {new_coverage} (+{round(new_coverage-old_coverage, 2)}) {func_name}")
         
         os.system("open cover.html")
     except Exception as e:
