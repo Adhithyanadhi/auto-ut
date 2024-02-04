@@ -37,7 +37,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 				const position = new vscode.Position(line.lineNumber, indexOf);
 				const range = document.getWordRangeAtPosition(position, new RegExp(this.regex));
 				if (range) {
-					var interface_name :string = matches[1][0].toUpperCase() + matches[1].slice(1) + "Sevice";
+					var interface_name :string = matches[1][0].toUpperCase() + matches[1].slice(1) + "Service";
 					var codeLens = new vscode.CodeLens(
 						range, 
 						{
