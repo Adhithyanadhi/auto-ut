@@ -1,7 +1,7 @@
 {
     "publisher": "AmbitiousCoder",
     "name": "auto-ut",
-    "displayName": "auto-ut",
+    "displayName": "Auto UT",
     "description": "Automatic UT generation for GoLang",
     "version": "0.0.1",
     "engines": {
