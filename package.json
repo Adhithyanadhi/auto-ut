@@ -1,4 +1,5 @@
 {
+    "publisher": "AmbitiousCoder",
     "name": "auto-ut",
     "displayName": "auto-ut",
     "description": "Automatic UT generation for GoLang",
