@@ -33,8 +33,8 @@ export function activate(context: ExtensionContext) {
 	});
 
 	commands.registerCommand("auto-ut.generateUT", (arg: string) => {
-		window.showInformationMessage(`Generating ${arg}`);
 		var args :string[]= arg.split(":::");
+		window.showInformationMessage(`Generating UT: ${arg[2]}`);
 		auto_ut_trigger(context, args);
 	});
 	vscode.commands.executeCommand("auto-ut.enableAutoUT");

@@ -501,11 +501,11 @@ def called_over_1_times(ut_test_case_dict: UT_TEST_CASES_DICT, test_case_q: List
             i +=  3
             mock_func_name = get_func_name_from_func_definition(failed_test_case_lines[i])
             if mock_func_name  ==  "BeginTransaction":
-                new_mock_func = MOCK_BEGIN_TRANSACTION
+                new_mock_func = constants.MOCK_BEGIN_TRANSACTION
             elif mock_func_name  ==  "AddTransactorToContext":
-                new_mock_func = MOCK_ADD_TRANSACTOR_TO_CONTEXT
+                new_mock_func = constants.MOCK_ADD_TRANSACTOR_TO_CONTEXT
             elif mock_func_name  ==  "GetExistingTransactorFromContext":
-                new_mock_func = MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT
+                new_mock_func = constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT
             else:
                 i +=  1
                 while not failed_test_case_lines[i].startswith("at: ["):
@@ -816,7 +816,7 @@ def main():
     constants.HOME_DIR = sys.argv[0].split('/python-scripts/auto_generate.py')[0]
     
     logging.basicConfig(filename=constants.HOME_DIR+"/python-scripts/generate_ut.log",
-                    filemode='a',
+                    filemode='w',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
@@ -938,7 +938,7 @@ def main():
             logging.error(f"new coverage not found", exc_info = True)
             raise Exception(f"new coverage not found")
         
-        print(f"After UT for {func_name}, Covered with Auto Generation {new_coverage-old_coverage}, New coverage {new_coverage}  {func_name}")
+        print(f"New coverage {new_coverage} (+{new_coverage-old_coverage}) {func_name}")
         
         os.system("open cover.html")
     except Exception as e:
