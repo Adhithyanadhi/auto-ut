@@ -811,9 +811,7 @@ def check_if_new_import_required(file_name, content):
 def main():
     if len(sys.argv) < 3:
         raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
-    file_path_variables = sys.argv[1].split('/')
-    constants.CWD = '/'.join(file_path_variables[:-1])
-    file_name = file_path_variables[-1]
+    constants.CWD, file_name = sys.argv[1].split('/service/v1/')
     
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
         os.system("rm tests/test_cases/auto_generated_test_cases.go")
