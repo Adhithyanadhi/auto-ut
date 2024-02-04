@@ -10,7 +10,6 @@ import os
 import logging
 import sys
 import constants
-import json
 import config
 
 all_mock_functions = {
@@ -810,12 +809,20 @@ def check_if_new_import_required(file_name, content):
     
 def main():
     if len(sys.argv) < 3:
+        logging.error(f"not all arguments are given - {' '.join(sys.argv)}")
         raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
     constants.CWD, file_name = sys.argv[1].split('/service/v1/')
     constants.SERVICE_NAME = constants.CWD.split('/')[-1]
     constants.HOME_DIR = sys.argv[0].split('/auto-ut/python-scripts/auto_generate.py')[0]
+    logging.basicConfig(filename=constants.HOME_DIR+"/auto-ut/python-scripts/generate_ut.log",
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+
     os.chdir(constants.CWD)
-    
+
+
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
         os.system("rm tests/test_cases/auto_generated_test_cases.go")
     
