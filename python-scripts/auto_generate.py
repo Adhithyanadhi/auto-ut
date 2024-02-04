@@ -813,8 +813,9 @@ def main():
         raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
     constants.CWD, file_name = sys.argv[1].split('/service/v1/')
     constants.SERVICE_NAME = constants.CWD.split('/')[-1]
-    constants.HOME_DIR = sys.argv[0].split('/auto-ut/python-scripts/auto_generate.py')[0]
-    logging.basicConfig(filename=constants.HOME_DIR+"/auto-ut/python-scripts/generate_ut.log",
+    constants.HOME_DIR = sys.argv[0].split('/python-scripts/auto_generate.py')[0]
+    
+    logging.basicConfig(filename=constants.HOME_DIR+"/python-scripts/generate_ut.log",
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
