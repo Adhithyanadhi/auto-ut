@@ -2,3 +2,4 @@ node_modules/*
 __pycache__
 .vscode-test/
 *.vsix
+python-scripts/generate_ut.log
