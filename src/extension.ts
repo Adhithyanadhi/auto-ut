@@ -20,7 +20,7 @@ export function auto_ut_trigger(context: ExtensionContext, args: string[]) {
 export function activate(context: ExtensionContext) {
 	const codelensProvider = new CodelensProvider();
 
-	languages.registerCodeLensProvider("*", codelensProvider);
+	languages.registerCodeLensProvider("go", codelensProvider);
 
 	commands.registerCommand("auto-ut.enableAutoUT", () => {
 		workspace.getConfiguration("auto-ut").update("enableCodeLens", true, true);
@@ -37,7 +37,10 @@ export function activate(context: ExtensionContext) {
 		var args :string[]= arg.split(":::");
 		auto_ut_trigger(context, args);
 	});
+	vscode.commands.executeCommand("auto-ut.enableAutoUT");
 }
+
+
 
 // this method is called when your extension is deactivated
 export function deactivate() {

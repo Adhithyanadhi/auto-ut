@@ -11,7 +11,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 	public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
 
 	constructor() {
-		this.regex = /func \(s \*([a-zA-Z]*)\) ([a-zA-Z]*)\(/g;
+		this.regex = /func \(s \*([a-zA-Z]*)Service\) ([a-zA-Z]*)\(/g;
 
 		vscode.workspace.onDidChangeConfiguration((_) => {
 			this._onDidChangeCodeLenses.fire();
@@ -37,7 +37,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 				const position = new vscode.Position(line.lineNumber, indexOf);
 				const range = document.getWordRangeAtPosition(position, new RegExp(this.regex));
 				if (range) {
-					var interface_name :string = matches[1][0].toUpperCase() + matches[1].slice(1);
+					var interface_name :string = matches[1][0].toUpperCase() + matches[1].slice(1) + "Sevice";
 					var codeLens = new vscode.CodeLens(
 						range, 
 						{
