@@ -19,7 +19,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 	}
 
 	public provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-		if (vscode.workspace.getConfiguration("codelens-sample").get("enableCodeLens", true)) {
+		if (vscode.workspace.getConfiguration("auto-ut").get("enableCodeLens", true)) {
 			this.codeLenses = [];
 			const regex = new RegExp(this.regex);
 			const text = document.getText();
@@ -43,7 +43,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 						{
 							title: "Generate UT",
 							tooltip: "Automatic UT generation",
-							command: "codelens-sample.codelensAction",
+							command: "auto-ut.generateUT",
 							arguments: [current_file + ":::" + interface_name + ":::" + matches[2]]
 						}
 					);
@@ -56,7 +56,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 	}
 
 	public resolveCodeLens(codeLens: vscode.CodeLens,) {
-		if (vscode.workspace.getConfiguration("codelens-sample").get("enableCodeLens", true)) {
+		if (vscode.workspace.getConfiguration("auto-ut").get("enableCodeLens", true)) {
 			return codeLens;
 		}
 		return null;

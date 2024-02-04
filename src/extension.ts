@@ -22,18 +22,20 @@ export function activate(context: ExtensionContext) {
 
 	languages.registerCodeLensProvider("*", codelensProvider);
 
-	commands.registerCommand("codelens-sample.enableCodeLens", () => {
-		workspace.getConfiguration("codelens-sample").update("enableCodeLens", true, true);
+	commands.registerCommand("auto-ut.enableAutoUT", () => {
+		workspace.getConfiguration("auto-ut").update("enableCodeLens", true, true);
+		window.showInformationMessage(`Hello from AmbitiousCoder, Enjoy AutoUT!`);
 	});
 
-	// commands.registerCommand("codelens-sample.disableCodeLens", () => {
-	// 	workspace.getConfiguration("codelens-sample").update("enableCodeLens", false, true);
-	// });
+	commands.registerCommand("auto-ut.disableAutoUT", () => {
+		workspace.getConfiguration("auto-ut").update("enableCodeLens", false, true);
+		window.showInformationMessage(`Thanks for using AutoUT!`);
+	});
 
-	commands.registerCommand("codelens-sample.codelensAction", (arg: string) => {
+	commands.registerCommand("auto-ut.generateUT", (arg: string) => {
+		window.showInformationMessage(`Generating ${arg}`);
 		var args :string[]= arg.split(":::");
 		auto_ut_trigger(context, args);
-		window.showInformationMessage(`Hello from Niru`);
 	});
 }
 

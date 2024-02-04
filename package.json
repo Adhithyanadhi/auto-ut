@@ -14,18 +14,18 @@
     "contributes": {
         "commands": [
             {
-                "title": "Enable CodeLens",
-                "command": "codelens-sample.enableCodeLens",
-                "category": "CodeLens Sample"
+                "title": "Enable",
+                "command": "auto-ut.enableAutoUT",
+                "category": "AutoUT"
             },
             {
-                "title": "Disable Codelens",
-                "command": "codelens-sample.disableCodeLens",
-                "category": "CodeLens Sample"
+                "title": "Disable",
+                "command": "auto-ut.disableAutoUT",
+                "category": "AutoUT"
             },
             {
-                "command": "codelens-sample.codelensAction",
-                "title": "CodeLens"
+                "command": "auto-ut.generateUT",
+                "title": "Generate UT"
             }
         ]
     },
