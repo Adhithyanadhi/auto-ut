@@ -940,13 +940,12 @@ def main():
         
         print(f"Coverage {new_coverage} (+{round(new_coverage-old_coverage, 2)}) {func_name}")
         
-        os.system("open cover.html")
+        
     except Exception as e:
         logging.error(e, exc_info = True)
-        print(e)
-        os.system("code "+constants.CWD)
         logging.error("Exepection occured", exc_info = True)
         raise Exception("Exepection occured")
-
+    finally:
+        os.system("code "+constants.CWD)
 if __name__  ==  "__main__":
     main()
