@@ -2,7 +2,7 @@
 # use trim/strip whenever needed
 import subprocess
 from copy import deepcopy
-from template import *
+import template
 import utils
 import ut_regex
 import re
@@ -11,6 +11,7 @@ import logging
 import sys
 import constants
 import config
+from typing import List
 
 all_mock_functions = {
     "valid": {},
@@ -154,20 +155,20 @@ def generate_test_service(func_name, interface_name, test_service_input_argument
     for i in range(len(test_service_input_argument_list)):
         if i  ==  0:
             continue
-        test_service_input_arguments.append(TestServiceInputArgumentTemplate % (i-1, test_service_input_argument_list[i]))
+        test_service_input_arguments.append(template.TestServiceInputArgumentTemplate % (i-1, test_service_input_argument_list[i]))
     func_input_parameters  = ', '.join(test_service_input_arguments)
 
     output_parameter_list = []
     for i in range(len(test_service_output_argument_list)):
-        output_parameter_list.append(OUTPUT_PARAMETER_TEMPLATE % (i))
-        test_service_output_assert_statement_list.append(ASSERT_STATEMENT_TEMPLATE % (i, i, i, i))
+        output_parameter_list.append(template.OUTPUT_PARAMETER_TEMPLATE % (i))
+        test_service_output_assert_statement_list.append(template.ASSERT_STATEMENT_TEMPLATE % (i, i, i, i))
     func_output_parameters = ', '.join(output_parameter_list)
     assert_statements = join_list('\n', test_service_output_assert_statement_list)
     
     if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
-        test_service = TEST_FUNC_TEMPLATE %(func_name, func_name, "Init()\n", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
+        test_service = template.TEST_FUNC_TEMPLATE %(func_name, func_name, "Init()\n", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
     else:        
-        test_service = TEST_FUNC_TEMPLATE %(func_name, func_name, "", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
+        test_service = template.TEST_FUNC_TEMPLATE %(func_name, func_name, "", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
     return test_service
 
 
@@ -285,7 +286,7 @@ def get_func_call_statement(mock_func_call_file_path: str, mock_func_call_file_l
             return line
 
 
-def replace_input_parameters(test_case: TEST_CASE_DICT, mock_func: MOCK_FUNC_DICT, unexpected_method_call_input_params):
+def replace_input_parameters(test_case: template.TEST_CASE_DICT, mock_func: template.MOCK_FUNC_DICT, unexpected_method_call_input_params):
     # assuming func call will not be having more than 10 params
     if len(unexpected_method_call_input_params) > 10:
         logging.error("unexpected_method_call_input_params > 10", exc_info = True)
@@ -421,7 +422,7 @@ def go_build(path):
     finally:
         os.chdir(prev)
 
-def form_ut_test_cases(ut_test_case_dict: UT_TEST_CASES_DICT, is_only_test_cases: bool):
+def form_ut_test_cases(ut_test_case_dict: template.UT_TEST_CASES_DICT, is_only_test_cases: bool):
     ut_test_cases = []
     import_statements = []
     
@@ -433,19 +434,19 @@ def form_ut_test_cases(ut_test_case_dict: UT_TEST_CASES_DICT, is_only_test_cases
         for mock_func in test_case.mock_functions:
             new_mock = None
             if mock_func.mock_run  ==  True:
-                new_mock =  MOCK_FUNC_TEMPLATE % (mock_func.interface_name, mock_func.mock_func_name, join_list(',\n', mock_func.mock_func_inputs), join_list(',\n', mock_func.mock_func_outputs), RUN_TEMPLATE)
+                new_mock =  template.MOCK_FUNC_TEMPLATE % (mock_func.interface_name, mock_func.mock_func_name, join_list(',\n', mock_func.mock_func_inputs), join_list(',\n', mock_func.mock_func_outputs), template.RUN_TEMPLATE)
             else:
-                new_mock = MOCK_FUNC_TEMPLATE % (mock_func.interface_name, mock_func.mock_func_name, join_list(',\n', mock_func.mock_func_inputs), join_list(',\n', mock_func.mock_func_outputs), RUN_ONCE_TEMPLATE)
+                new_mock = template.MOCK_FUNC_TEMPLATE % (mock_func.interface_name, mock_func.mock_func_name, join_list(',\n', mock_func.mock_func_inputs), join_list(',\n', mock_func.mock_func_outputs), template.RUN_ONCE_TEMPLATE)
             mock_functions.append(new_mock)
             
-        ut_test_cases.append(TEST_CASE_TEMPLATE % (test_case.func_name, test_case.test_case_id, join_list(',\n', test_case.inputs), join_list(',\n', test_case.expected_outputs), join_list('\n', mock_functions)))
+        ut_test_cases.append(template.TEST_CASE_TEMPLATE % (test_case.func_name, test_case.test_case_id, join_list(',\n', test_case.inputs), join_list(',\n', test_case.expected_outputs), join_list('\n', mock_functions)))
     
-    test_cases = TEST_CASES_TEMPLATE % (ut_test_case_dict.func_name, ut_test_case_dict.func_name, join_list('\n', ut_test_cases))
+    test_cases = template.TEST_CASES_TEMPLATE % (ut_test_case_dict.func_name, ut_test_case_dict.func_name, join_list('\n', ut_test_cases))
     if is_only_test_cases:
         return test_cases
 
     import_statements = form_import_statements(join_list(',\n', ut_test_cases))
-    return UT_TEST_CASES_TEMPLATE % (join_list('\n', import_statements), test_cases)
+    return template.UT_TEST_CASES_TEMPLATE % (join_list('\n', import_statements), test_cases)
 
 def replace_expected_outputs(expected_outputs:List, index:int, actual:str):
     # extract actual from "actual : <actual_content>"
@@ -464,7 +465,7 @@ def replace_expected_outputs(expected_outputs:List, index:int, actual:str):
     expected_outputs[index] = actual
     return expected_outputs
 
-def output_assertion(test_case: TEST_CASE_DICT, failed_test_case: str):
+def output_assertion(test_case: template.TEST_CASE_DICT, failed_test_case: str):
     actual = ""
     output_assert_failed_temp = failed_test_case.split("asserting out")
     output_assert_failed = output_assert_failed_temp[-1]
@@ -482,7 +483,7 @@ def output_assertion(test_case: TEST_CASE_DICT, failed_test_case: str):
     logging.error(f"Unhandled: output_assert_failed {failed_test_case}", exc_info = True)
     raise Exception(f"Unhandled: output_assert_failed {failed_test_case}")
 
-def closet_call_i_have(test_case: TEST_CASE_DICT, failed_test_case: str):
+def closet_call_i_have(test_case: template.TEST_CASE_DICT, failed_test_case: str):
     failed_test_case_lines = failed_test_case.split('\n')
     unexpected_method_call_input_params = []
     mock_func_name = ""
@@ -504,11 +505,11 @@ def closet_call_i_have(test_case: TEST_CASE_DICT, failed_test_case: str):
             break
 
         
-def called_over_1_times(ut_test_case_dict: UT_TEST_CASES_DICT, test_case_q: List[TEST_CASE_DICT],test_case: TEST_CASE_DICT, failed_test_case: str) -> TEST_CASE_DICT:
+def called_over_1_times(ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case_q: List[template.TEST_CASE_DICT],test_case: template.TEST_CASE_DICT, failed_test_case: str) -> template.TEST_CASE_DICT:
     failed_test_case_lines = failed_test_case.split('\n')
     unexpected_method_call_input_params = []
     mock_func_name = ""
-    new_mock_func: MOCK_FUNC_DICT = None
+    new_mock_func: template.MOCK_FUNC_DICT = None
     for i in range(len(failed_test_case_lines)):
         if "mock: The method has been called over 1 times" in failed_test_case_lines[i]:
             i +=  3
@@ -628,7 +629,7 @@ def other_possible_arg(output_param: str):
     logging.error(f"unhandled: {output_param}", exc_info = True)
     raise Exception(f"unhandled: {output_param}")
 
-def check_test_case_already_available(test_case_q: List[TEST_CASE_DICT], ut_test_case_dict: UT_TEST_CASES_DICT, test_case: TEST_CASE_DICT):
+def check_test_case_already_available(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT):
     if not test_case:
         return True
     already_available = False
@@ -644,7 +645,7 @@ def check_test_case_already_available(test_case_q: List[TEST_CASE_DICT], ut_test
                 break
     return already_available
 
-def mock_other_possible_test_cases(test_case_q: List[TEST_CASE_DICT], ut_test_case_dict: UT_TEST_CASES_DICT, test_case: TEST_CASE_DICT, mock_func: MOCK_FUNC_DICT, is_output_used: List[bool]):
+def mock_other_possible_test_cases(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT, mock_func: template.MOCK_FUNC_DICT, is_output_used: List[bool]):
     if len(is_output_used) == 0:
         return test_case_q
     combinations: List[List[str]] = []
@@ -662,7 +663,7 @@ def mock_other_possible_test_cases(test_case_q: List[TEST_CASE_DICT], ut_test_ca
         test_case_copy = deepcopy(test_case)
         input_params_copy = deepcopy(mock_func.mock_func_inputs)
             
-        new_mock_func = MOCK_FUNC_DICT(mock_func.interface_name, mock_func.mock_func_name, input_params_copy, possible_output)
+        new_mock_func = template.MOCK_FUNC_DICT(mock_func.interface_name, mock_func.mock_func_name, input_params_copy, possible_output)
         add_mock_to_list(new_mock_func = new_mock_func)
         test_case_copy.mock_functions.append(new_mock_func)
         if test_case_copy is None:
@@ -674,7 +675,7 @@ def mock_other_possible_test_cases(test_case_q: List[TEST_CASE_DICT], ut_test_ca
     
     return test_case_q
 
-def add_mock_to_list(new_mock_func: MOCK_FUNC_DICT):
+def add_mock_to_list(new_mock_func: template.MOCK_FUNC_DICT):
     invalid = "invalid"
     if all_mock_functions[invalid].get(new_mock_func.interface_name) is None:
         all_mock_functions[invalid][new_mock_func.interface_name] = {}
@@ -694,7 +695,7 @@ def get_output_param_usage(mock_func_call_output_content):
     return is_output_used
 
 
-def mock_unexpected_method_call(test_case_q: List[TEST_CASE_DICT], ut_test_case_dict: UT_TEST_CASES_DICT, test_case: TEST_CASE_DICT, mock_func_name: MOCK_FUNC_DICT, failed_test_case: str) -> MOCK_FUNC_DICT:
+def mock_unexpected_method_call(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT, mock_func_name: template.MOCK_FUNC_DICT, failed_test_case: str) -> template.MOCK_FUNC_DICT:
     mock_file_path = list(set(re.compile(ut_regex.MOCK_FILE_PATH_RECOVERED).findall(failed_test_case)))[0][1].strip().split(' ')[1].strip()
     mock_file_path_name, mock_file_path_line_number = mock_file_path.split(':')
     mock_file_path_line_number = int(mock_file_path_line_number.strip())
@@ -715,19 +716,19 @@ def mock_unexpected_method_call(test_case_q: List[TEST_CASE_DICT], ut_test_case_
         called_interface_name = called_interface_name[:-3] + "Repo"
 
     mock_interface = "Mock"+called_interface_name
-    new_mock_func = MOCK_FUNC_DICT(mock_interface, mock_func_name, mock_func_input_arguments, mock_func_output_arguments)
+    new_mock_func = template.MOCK_FUNC_DICT(mock_interface, mock_func_name, mock_func_input_arguments, mock_func_output_arguments)
     add_mock_to_list(new_mock_func = new_mock_func)
     
     test_case_q = mock_other_possible_test_cases(test_case_q = test_case_q, ut_test_case_dict = ut_test_case_dict, test_case = test_case, mock_func=new_mock_func, is_output_used = is_output_used)
     return new_mock_func
 
 
-def method_cal_was_unexpected(test_case_q: List[TEST_CASE_DICT], ut_test_case_dict: UT_TEST_CASES_DICT, test_case: TEST_CASE_DICT, failed_test_case: str):
+def method_cal_was_unexpected(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT, failed_test_case: str):
     to_mock_func_list = list(set(re.compile(ut_regex.EITHER_DO_MOCK_ON).findall(failed_test_case)))
     if len(to_mock_func_list) !=  1:
         logging.error(f"unhandled: no or more mock found in {failed_test_case}", exc_info = True)
         raise Exception(f"unhandled: no or more mock found in {failed_test_case}")
-    new_mock_func: MOCK_FUNC_DICT = None
+    new_mock_func: template.MOCK_FUNC_DICT = None
     mock_func_name = to_mock_func_list[0]
 
     if mock_func_name  ==  "BeginTransaction":
@@ -749,8 +750,8 @@ def write_to_back_up_file(ut_test_case_dict, file_path):
     test_cases = form_ut_test_cases(ut_test_case_dict, False)
     utils.write_to_file(test_cases, file_path)
 
-def auto_generate_test_cases(test_case_q: List[TEST_CASE_DICT], func_name) -> UT_TEST_CASES_DICT:
-    ut_test_case_dict =  UT_TEST_CASES_DICT(func_name = func_name, test_cases = [])
+def auto_generate_test_cases(test_case_q: List[template.TEST_CASE_DICT], func_name) -> template.UT_TEST_CASES_DICT:
+    ut_test_case_dict =  template.UT_TEST_CASES_DICT(func_name = func_name, test_cases = [])
     try:
         func_name = ut_test_case_dict.func_name
         while len(test_case_q):
@@ -759,7 +760,7 @@ def auto_generate_test_cases(test_case_q: List[TEST_CASE_DICT], func_name) -> UT
             
             tries = 0
             while tries < 10:
-                test_cases = form_ut_test_cases(UT_TEST_CASES_DICT(func_name, [test_case]), False)
+                test_cases = form_ut_test_cases(template.UT_TEST_CASES_DICT(func_name, [test_case]), False)
                 ut_test_cases_file = constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"
                 utils.write_to_file(test_cases, ut_test_cases_file)
                 go_build("tests/test_cases")
@@ -803,7 +804,7 @@ def auto_generate_test_cases(test_case_q: List[TEST_CASE_DICT], func_name) -> UT
         logging.error(e, exc_info = True)
         return ut_test_case_dict
 
-def re_assign_test_case_ids(ut_test_case_dict: UT_TEST_CASES_DICT):
+def re_assign_test_case_ids(ut_test_case_dict: template.UT_TEST_CASES_DICT):
     for i in range(len(ut_test_case_dict.test_cases)-1, -1, -1):
         ut_test_case_dict.test_cases[i].test_case_id = i+1
     return ut_test_case_dict
@@ -875,7 +876,16 @@ def main():
         utils.initialize_constants()
         utils.initialize_interface_file_name_map()
         utils.initialize_struct_file_name_map()
-        
+        ut_test_cases_file = constants.CWD+f"/tests/test_cases/{file_name.split('.go')[0]}_test_cases.go"
+        if not os.path.isfile(ut_test_cases_file):
+            logging.info(f"Test cases file not found: {ut_test_cases_file} creating new file")
+            utils.create_file(content=template.UT_TEST_CASES_TEMPLATE % ("", ""), path=ut_test_cases_file)
+
+        test_service_file = constants.CWD+f"/tests/service/{file_name.split('.go')[0]}_test.go"
+        if not os.path.isfile(test_service_file):
+            logging.info(f"Test cases file not found: {test_service_file} creating new file")
+            utils.create_file(content=template.UT_TEST_SERVICE_FILE_TEMPLATE % ("", ""), path=test_service_file)
+
         func_name = sys.argv[3]
         interface_name = sys.argv[2]
         path = constants.CWD+f"/service/v1/{file_name}"
@@ -886,7 +896,6 @@ def main():
         test_service_input_argument_list = get_input_parameters(input_contents)
         test_service_output_argument_list = get_output_parameters(output_contents)
         test_service = generate_test_service(func_name, interface_name, test_service_input_argument_list, test_service_output_argument_list)
-        test_service_file = constants.CWD+f"/tests/service/{file_name.split('.go')[0]}_test.go"
         utils.append_to_file(test_service, test_service_file)
         test_service_file_new_import_statements = check_if_new_import_required(test_service_file, test_service)
         if len(test_service_file_new_import_statements) > 0:
@@ -902,7 +911,7 @@ def main():
             # ignore 0th element as ctx is not used in test_case input
         inputs = form_default_arguments(test_service_input_argument_list[1:], func_name)
         outputs = form_default_arguments(test_service_output_argument_list, func_name)    
-        test_case = TEST_CASE_DICT(func_name, get_next_test_case_id(), inputs, outputs, [])
+        test_case = template.TEST_CASE_DICT(func_name, get_next_test_case_id(), inputs, outputs, [])
         test_case_q = [test_case]
         
         for i in range(len(inputs)):
@@ -918,9 +927,7 @@ def main():
         ut_test_case_dict = auto_generate_test_cases(test_case_q =  test_case_q, func_name = func_name)
         ut_test_case_dict = re_assign_test_case_ids(ut_test_case_dict)
         test_cases = form_ut_test_cases(ut_test_case_dict, True)
-        ut_test_cases_file = constants.CWD+f"/tests/test_cases/{file_name.split('.go')[0]}_test_cases.go"
         utils.append_to_file(test_cases, ut_test_cases_file)
-
 
         test_case_file_new_import_statements = check_if_new_import_required(ut_test_cases_file, test_cases)
         if len(test_case_file_new_import_statements) > 0:

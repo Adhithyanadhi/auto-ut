@@ -14,6 +14,17 @@ def read_file_contents(path):
     file.close()
     return file_contents
 
+def create_file(content, path):
+    if not path:
+        logging.error(f"Create: File path cannot be empty {path}", exc_info = True)
+        raise Exception(f"Create: File path cannot be empty {path}")
+    if os.path.isfile(path):
+        logging.error(f"Create: File name already exists {path}", exc_info = True)
+        raise Exception(f"Create: File name already exists {path}")
+    f = open(path, "w")
+    f.write(content)
+    f.close()
+
 def write_to_file(content, path):
     if not path:
         logging.error(f"Write: File path cannot be empty {path}", exc_info = True)
@@ -42,7 +53,7 @@ def initialize_struct_file_name_map():
         config.map_all_structs_with_file()
     struct_map_contents = read_file_contents("struct_map.json")
     constants.STRUCT_FILE_NAME_MAP = json.loads(struct_map_contents)
-    
+
 def append_to_file(content, path):
     if not path:
         logging.error(f"Append: File path cannot be empty {path}", exc_info = True)

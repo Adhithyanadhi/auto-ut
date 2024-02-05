@@ -111,6 +111,14 @@ class UT_TEST_CASES_DICT:
         self.test_cases: List[TEST_CASE_DICT] = [test_case for test_case in test_cases]
 		
 
+UT_TEST_SERVICE_FILE_TEMPLATE = """
+package service
+import (
+%s
+)
+%s
+"""
+
 UT_TEST_CASES_TEMPLATE = """
 package test_cases
 import (
