@@ -1,8 +1,5 @@
 import * as vscode from 'vscode';
 
-/**
- * CodelensProvider
- */
 export class CodelensProvider implements vscode.CodeLensProvider {
 
 	private codeLenses: vscode.CodeLens[] = [];
