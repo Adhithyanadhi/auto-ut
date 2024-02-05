@@ -393,6 +393,19 @@ def join_list(separator: str, l: List[any]):
         return joined_list + separator
     return ""
 
+def go_test(path):
+    prev = os.getcwd()
+    try:
+        os.chdir(path)
+        go_test_output = os.popen("/usr/local/go/bin/go test").read()
+        if "[build failed]" in go_test_output:
+            logging.error("Fix test service", exc_info = True)
+            raise Exception("Fix test service")
+    except Exception as e:
+        raise e
+    finally:
+        os.chdir(prev)
+
 def go_build(path):
     prev = os.getcwd()
     os.chdir(path)
@@ -402,11 +415,11 @@ def go_build(path):
             logging.error(f"proc-stdout : {proc.stdout}", exc_info = True)
             raise Exception(f"proc-stdout : {proc.stdout}")
     except Exception as e:
-        print(e)
         logging.error(e, exc_info = True)
         logging.error(f"Build failed in {os.getcwd()}", exc_info = True)
         raise Exception(f"Build failed in {os.getcwd()}")
-    os.chdir(prev)
+    finally:
+        os.chdir(prev)
 
 def form_ut_test_cases(ut_test_case_dict: UT_TEST_CASES_DICT, is_only_test_cases: bool):
     ut_test_cases = []
@@ -825,8 +838,10 @@ def main():
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
         os.system("rm tests/test_cases/auto_generated_test_cases.go")
     
-
+    go_test("tests/service")
+    
     utils.set_coverage_file()
+    
     try:
         old_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
     except Exception as e:
@@ -952,7 +967,6 @@ def main():
     except Exception as e:
         logging.error(e, exc_info = True)
         logging.error("Exepection occured", exc_info = True)
-        raise Exception("Exepection occured")
     finally:
         os.system("code "+constants.CWD)
 if __name__  ==  "__main__":
