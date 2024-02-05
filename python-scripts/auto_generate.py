@@ -831,7 +831,7 @@ def main():
     mock_tx = "MockTx"
     if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
         mock_tx = "MockTx"
-    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend"]:
+    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend", "tap-crm-contract-backend"]:
         mock_tx = "MockTxRepo"
     else:
         logging.error("Unhandled: repo-name", exc_info = True)
