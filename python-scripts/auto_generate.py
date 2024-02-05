@@ -819,25 +819,8 @@ def get_import_statements(file_name):
 
 def check_if_new_import_required(file_name, content):
     return list(set(form_import_statements(content)) - set(get_import_statements(file_name)))
-    
-def main():
-    if len(sys.argv) < 3:
-        logging.error(f"not all arguments are given - {' '.join(sys.argv)}")
-        raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
-    constants.CWD, file_name = sys.argv[1].split('/service/v1/')
-    constants.SERVICE_NAME = constants.CWD.split('/')[-1]
-    constants.HOME_DIR = sys.argv[0].split('/python-scripts/auto_generate.py')[0]
-    
-    logging.basicConfig(filename=constants.HOME_DIR+"/python-scripts/generate_ut.log",
-                    filemode='w',
-                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                    datefmt='%H:%M:%S',
-                    level=logging.DEBUG)
-    os.chdir(constants.CWD)
 
-    if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
-        os.system("rm tests/test_cases/auto_generated_test_cases.go")
-    
+def check_exisiting_ut() -> int:
     go_test("tests/service")
     
     utils.set_coverage_file()
@@ -867,63 +850,71 @@ def main():
     if not old_coverage_found:
         logging.error(f"old coverage  not found", exc_info = True)
         raise Exception(f"old coverage  not found")
-    
-    mock_tx = "MockTx"
-    if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
-        mock_tx = "MockTx"
-    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend", "tap-crm-contract-backend"]:
-        mock_tx = "MockTxRepo"
-    else:
-        logging.error("Unhandled: repo-name", exc_info = True)
-        raise Exception("Unhandled: repo-name")
+    return old_coverage
 
-    constants.MOCK_BEGIN_TRANSACTION = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="BeginTransaction", mock_func_inputs=[], mock_func_outputs=["txObj"])
-    constants.MOCK_ADD_TRANSACTOR_TO_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="AddTransactorToContext", mock_func_inputs=["ctx", "txObj"], mock_func_outputs=["ctx"])
-    constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name='GetExistingTransactorFromContext', mock_func_inputs=["ctx"], mock_func_outputs=["txObj"])
-
-    utils.initialize_interface_file_name_map()
-    utils.initialize_struct_file_name_map()
-    
-    func_name = sys.argv[3]
-    interface_name = sys.argv[2]
-    path = constants.CWD+f"/service/v1/{file_name}"
-
-
-    func_definition = get_func_definition(path, interface_name, func_name)
-    input_contents, output_contents = get_input_output_contents(func_definition)
-    test_service_input_argument_list = get_input_parameters(input_contents)
-    test_service_output_argument_list = get_output_parameters(output_contents)
-    test_service = generate_test_service(func_name, interface_name, test_service_input_argument_list, test_service_output_argument_list)
-    test_service_file = constants.CWD+f"/tests/service/{file_name.split('.go')[0]}_test.go"
-    utils.append_to_file(test_service, test_service_file)
-    test_service_file_new_import_statements = check_if_new_import_required(test_service_file, test_service)
-    if len(test_service_file_new_import_statements) > 0:
-        file_contents = utils.read_file_contents(test_service_file).split('\n')
-        for i in range(len(file_contents)):
-            line = file_contents[i]
-            if "import (" in line:
-                file_contents = file_contents[:i+1] + test_service_file_new_import_statements + file_contents[i+1:]
-                file_contents = '\n'.join(file_contents)
-                utils.write_to_file(file_contents, test_service_file)
-                break
-
-        # ignore 0th element as ctx is not used in test_case input
-    inputs = form_default_arguments(test_service_input_argument_list[1:], func_name)
-    outputs = form_default_arguments(test_service_output_argument_list, func_name)    
-    test_case = TEST_CASE_DICT(func_name, get_next_test_case_id(), inputs, outputs, [])
-    test_case_q = [test_case]
-    
-    for i in range(len(inputs)):
-        for arg in other_possible_arg(inputs[i]):
-            input_params = deepcopy(inputs)
-            test_case_copy = deepcopy(test_case)
-            input_params[i] = arg
-            test_case_copy.inputs = input_params
-            test_case_copy.test_case_id = get_next_test_case_id()
-            test_case_q.append(test_case_copy)
-    ut_test_case_dict = None
-
+def main():
     try:
+        if len(sys.argv) < 3:
+            logging.error(f"not all arguments are given - {' '.join(sys.argv)}")
+            raise Exception(f"not all arguments are given - {' '.join(sys.argv)}")
+        constants.CWD, file_name = sys.argv[1].split('/service/v1/')
+        constants.SERVICE_NAME = constants.CWD.split('/')[-1]
+        constants.HOME_DIR = sys.argv[0].split('/python-scripts/auto_generate.py')[0]
+        
+        logging.basicConfig(filename=constants.HOME_DIR+"/python-scripts/generate_ut.log",
+                        filemode='w',
+                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.DEBUG)
+        os.chdir(constants.CWD)
+
+        if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
+            os.system("rm tests/test_cases/auto_generated_test_cases.go")
+        
+        old_coverage = check_exisiting_ut()
+        utils.initialize_constants()
+        utils.initialize_interface_file_name_map()
+        utils.initialize_struct_file_name_map()
+        
+        func_name = sys.argv[3]
+        interface_name = sys.argv[2]
+        path = constants.CWD+f"/service/v1/{file_name}"
+
+
+        func_definition = get_func_definition(path, interface_name, func_name)
+        input_contents, output_contents = get_input_output_contents(func_definition)
+        test_service_input_argument_list = get_input_parameters(input_contents)
+        test_service_output_argument_list = get_output_parameters(output_contents)
+        test_service = generate_test_service(func_name, interface_name, test_service_input_argument_list, test_service_output_argument_list)
+        test_service_file = constants.CWD+f"/tests/service/{file_name.split('.go')[0]}_test.go"
+        utils.append_to_file(test_service, test_service_file)
+        test_service_file_new_import_statements = check_if_new_import_required(test_service_file, test_service)
+        if len(test_service_file_new_import_statements) > 0:
+            file_contents = utils.read_file_contents(test_service_file).split('\n')
+            for i in range(len(file_contents)):
+                line = file_contents[i]
+                if "import (" in line:
+                    file_contents = file_contents[:i+1] + test_service_file_new_import_statements + file_contents[i+1:]
+                    file_contents = '\n'.join(file_contents)
+                    utils.write_to_file(file_contents, test_service_file)
+                    break
+
+            # ignore 0th element as ctx is not used in test_case input
+        inputs = form_default_arguments(test_service_input_argument_list[1:], func_name)
+        outputs = form_default_arguments(test_service_output_argument_list, func_name)    
+        test_case = TEST_CASE_DICT(func_name, get_next_test_case_id(), inputs, outputs, [])
+        test_case_q = [test_case]
+        
+        for i in range(len(inputs)):
+            for arg in other_possible_arg(inputs[i]):
+                input_params = deepcopy(inputs)
+                test_case_copy = deepcopy(test_case)
+                input_params[i] = arg
+                test_case_copy.inputs = input_params
+                test_case_copy.test_case_id = get_next_test_case_id()
+                test_case_q.append(test_case_copy)
+        ut_test_case_dict = None
+
         ut_test_case_dict = auto_generate_test_cases(test_case_q =  test_case_q, func_name = func_name)
         ut_test_case_dict = re_assign_test_case_ids(ut_test_case_dict)
         test_cases = form_ut_test_cases(ut_test_case_dict, True)
@@ -962,11 +953,10 @@ def main():
             raise Exception(f"new coverage not found")
         
         print(f"Coverage {new_coverage} (+{round(new_coverage-old_coverage, 2)}) {func_name}")
-        
-        
     except Exception as e:
         logging.error(e, exc_info = True)
         logging.error("Exepection occured", exc_info = True)
+        print(e)
     finally:
         os.system("code "+constants.CWD)
 if __name__  ==  "__main__":

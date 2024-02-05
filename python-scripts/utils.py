@@ -3,6 +3,7 @@ import json
 import constants
 import os
 import config
+import template
 
 def read_file_contents(path):
     if not path:
@@ -52,3 +53,19 @@ def append_to_file(content, path):
     f = open(path, "a")
     f.write(content)
     f.close()
+
+
+def initialize_constants():
+    mock_tx = "MockTx"
+    if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
+        mock_tx = "MockTx"
+    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend", "tap-crm-contract-backend"]:
+        mock_tx = "MockTxRepo"
+    else:
+        logging.error("Unhandled: repo-name", exc_info = True)
+        raise Exception("Unhandled: repo-name")
+
+    constants.MOCK_BEGIN_TRANSACTION = template.MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="BeginTransaction", mock_func_inputs=[], mock_func_outputs=["txObj"])
+    constants.MOCK_ADD_TRANSACTOR_TO_CONTEXT = template.MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="AddTransactorToContext", mock_func_inputs=["ctx", "txObj"], mock_func_outputs=["ctx"])
+    constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT = template.MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name='GetExistingTransactorFromContext', mock_func_inputs=["ctx"], mock_func_outputs=["txObj"])
+
