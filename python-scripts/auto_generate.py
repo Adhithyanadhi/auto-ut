@@ -827,7 +827,16 @@ def main():
     
 
     utils.set_coverage_file()
-    old_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
+    try:
+        old_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
+    except Exception as e:
+        logging.info("old_coverage_contents", old_coverage_contents)
+        raise Exception("check existing mock functions")
+    
+    if "[build failed]" in old_coverage_contents:
+        logging.error("old coverage contents", old_coverage_contents)
+        raise Exception(old_coverage_contents)
+    
     if "--FAIL:" in old_coverage_contents:
         logging.error("fix existing UT", exc_info = True)
         raise Exception("fix existing UT")
