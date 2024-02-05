@@ -822,6 +822,7 @@ def main():
                     level=logging.DEBUG)
 
     os.chdir(constants.CWD)
+    go_build("tests/test_cases")
 
 
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
