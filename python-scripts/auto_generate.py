@@ -820,33 +820,18 @@ def main():
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
-
     os.chdir(constants.CWD)
-    go_build("tests/test_cases")
-
 
     if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
         os.system("rm tests/test_cases/auto_generated_test_cases.go")
     
-    mock_tx = "MockTx"
-    if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
-        mock_tx = "MockTx"
-    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend", "tap-crm-contract-backend"]:
-        mock_tx = "MockTxRepo"
-    else:
-        logging.error("Unhandled: repo-name", exc_info = True)
-        raise Exception("Unhandled: repo-name")
-        
-    
-    constants.MOCK_BEGIN_TRANSACTION = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="BeginTransaction", mock_func_inputs=[], mock_func_outputs=["txObj"])
-    constants.MOCK_ADD_TRANSACTOR_TO_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="AddTransactorToContext", mock_func_inputs=["ctx", "txObj"], mock_func_outputs=["ctx"])
-    constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name='GetExistingTransactorFromContext', mock_func_inputs=["ctx"], mock_func_outputs=["txObj"])
 
     utils.set_coverage_file()
     old_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
     if "--FAIL:" in old_coverage_contents:
         logging.error("fix existing UT", exc_info = True)
         raise Exception("fix existing UT")
+
     old_coverage_contents = old_coverage_contents.split('\n')
     old_coverage_found = False
     for i in range(len(old_coverage_contents)-1, -1, -1):
@@ -859,6 +844,19 @@ def main():
         logging.error(f"old coverage  not found", exc_info = True)
         raise Exception(f"old coverage  not found")
     
+    mock_tx = "MockTx"
+    if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
+        mock_tx = "MockTx"
+    elif constants.SERVICE_NAME in ["tap-crm-account-management-backend", "tap-crm-activity-management-backend", "tap-crm-contract-backend"]:
+        mock_tx = "MockTxRepo"
+    else:
+        logging.error("Unhandled: repo-name", exc_info = True)
+        raise Exception("Unhandled: repo-name")
+
+    constants.MOCK_BEGIN_TRANSACTION = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="BeginTransaction", mock_func_inputs=[], mock_func_outputs=["txObj"])
+    constants.MOCK_ADD_TRANSACTOR_TO_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name="AddTransactorToContext", mock_func_inputs=["ctx", "txObj"], mock_func_outputs=["ctx"])
+    constants.MOCK_GET_EXISTING_TRANSACTOR_FROM_CONTEXT = MOCK_FUNC_DICT(interface_name=mock_tx, mock_func_name='GetExistingTransactorFromContext', mock_func_inputs=["ctx"], mock_func_outputs=["txObj"])
+
     utils.initialize_interface_file_name_map()
     utils.initialize_struct_file_name_map()
     
@@ -926,9 +924,9 @@ def main():
 
         new_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
         if "--FAIL:" in new_coverage_contents:
-            logging.error("fix existing UT", exc_info = True)
+            logging.error("coverage run failed", exc_info = True)
             os.system("code "+constants.CWD)
-            raise Exception("fix existing UT")
+            raise Exception("coverage run failed")
         new_coverage_contents = new_coverage_contents.split('\n')
         new_coverage_found = False
         for line in new_coverage_contents:
