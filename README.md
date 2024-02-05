@@ -1,4 +1,3 @@
-
 # AutoUT
 
 Features
@@ -37,6 +36,10 @@ Initial version with base code coverage.
 ### 0.0.1
 
 Initial release AutoUT.
+
+### 0.0.2
+
+Minor bugfixes
 
 ## For more information
 
