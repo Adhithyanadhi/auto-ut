@@ -1,7 +1,5 @@
-from copy import deepcopy
 from typing import List
-import os
-TEST_CASE_ID = 0
+
 
 # regex to be modified to check dao., utils., service.,
 
@@ -112,7 +110,7 @@ class UT_TEST_CASES_DICT:
 		
 
 UT_TEST_SERVICE_FILE_TEMPLATE = """
-package service
+package test_service
 import (
 %s
 )

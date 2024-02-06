@@ -31,9 +31,8 @@ def get_all_possible_combinations(initial_arr: List[str], possiblities: List[Lis
 				combinations.append(new_arr)
 
 def get_next_test_case_id():
-    global TEST_CASE_ID
-    TEST_CASE_ID +=  1
-    return TEST_CASE_ID
+    constants.TEST_CASE_ID +=  1
+    return constants.TEST_CASE_ID
 
 def get_file_path(interface_name):
     try:
@@ -386,6 +385,12 @@ def form_import_statements(file_content):
         import_statements.append('"net/http"')
     if "tapcontext." in file_content:
         import_statements.append('"gitlab.com/tekion/development/tap/backend/taplibgo/tapcontext"')
+    if "testing." in file_content:
+        import_statements.append('"testing"')
+    if "assert." in file_content:
+        import_statements.append('"github.com/stretchr/testify/assert"')
+    if "test_cases." in file_content:
+        import_statements.append('"gitlab.com/tekion/development/tap/mas/tap-crm-lead-management-backend/tests/test_cases"')
     return import_statements        
 
 def join_list(separator: str, l: List[any]):
