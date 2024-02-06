@@ -390,7 +390,7 @@ def form_import_statements(file_content):
     if "assert." in file_content:
         import_statements.append('"github.com/stretchr/testify/assert"')
     if "test_cases." in file_content:
-        import_statements.append('"gitlab.com/tekion/development/tap/mas/tap-crm-lead-management-backend/tests/test_cases"')
+        import_statements.append(f'"gitlab.com/tekion/development/tap/mas/{constants.SERVICE_NAME}/tests/test_cases"')
     return import_statements        
 
 def join_list(separator: str, l: List[any]):
@@ -561,7 +561,6 @@ def get_struct_name_type(file_path: str, struct_name: str):
             struct_pattern, struct_content = struct_pattern.strip(), struct_content.strip()
             primary_key = structs[i+1].strip().split('\n')[0].strip()
             if len(primary_key.split(' ')) < 2:
-                os.system("code "+constants.CWD)
                 val = int(input(f"Check struct {struct_name} \n 1. modify and re-rerun \n 2. continue without primary key validation.\n") )
                 print("continuing...")
                 if val == 1:
@@ -952,7 +951,6 @@ def main():
         new_coverage_contents = os.popen(f"sh {constants.CWD}/{constants.RUN_COVERAGE_FILE}").read()
         if "--FAIL:" in new_coverage_contents:
             logging.error("coverage run failed", exc_info = True)
-            os.system("code "+constants.CWD)
             raise Exception("coverage run failed")
         new_coverage_contents = new_coverage_contents.split('\n')
         new_coverage_found = False
@@ -969,7 +967,5 @@ def main():
         logging.error(e, exc_info = True)
         logging.error("Exepection occured", exc_info = True)
         print(e)
-    finally:
-        os.system("code "+constants.CWD)
 if __name__  ==  "__main__":
     main()
