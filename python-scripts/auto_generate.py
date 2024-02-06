@@ -18,6 +18,33 @@ all_mock_functions = {
     "invalid": {}
 }
 
+def fix_import_statements(file_path, content):
+    test_service_file_new_import_statements = check_if_new_import_required(file_path, content)
+    if len(test_service_file_new_import_statements) > 0:
+        import_statements_found = False
+        file_contents = utils.read_file_contents(file_path).split('\n')
+        for i in range(len(file_contents)):
+            line = file_contents[i]
+            if "import (" in line:
+                import_statements_found = True
+                file_contents = file_contents[:i+1] + test_service_file_new_import_statements + file_contents[i+1:]
+                file_contents = '\n'.join(file_contents)
+                utils.write_to_file(file_contents, file_path)
+                break
+        if not import_statements_found:
+            for i in range(len(file_contents)):
+                line = file_contents[i].strip()
+                if re.search(ut_regex.PACKAGE, line):
+                    file_contents = file_contents[:i+1] + "import (\n" + test_service_file_new_import_statements + "\n" + file_contents[i+1:]
+                    file_contents = '\n'.join(file_contents)
+                    import_statements_found = True
+                    utils.write_to_file(file_contents, file_path)
+                    break
+        if not import_statements_found:
+            logging.error("import statements not found", exc_info = True)
+            raise Exception("import statements not found")
+
+
 def get_all_possible_combinations(initial_arr: List[str], possiblities: List[List[tuple]], combinations: List[List[tuple]]):
 	n: int = len(initial_arr)
 	combinations.append(initial_arr)
@@ -857,6 +884,7 @@ def check_exisiting_ut() -> int:
         raise Exception(f"old coverage  not found")
     return old_coverage
 
+
 def main():
     try:
         if len(sys.argv) < 3:
@@ -901,18 +929,9 @@ def main():
         test_service_output_argument_list = get_output_parameters(output_contents)
         test_service = generate_test_service(func_name, interface_name, test_service_input_argument_list, test_service_output_argument_list)
         utils.append_to_file(test_service, test_service_file)
-        test_service_file_new_import_statements = check_if_new_import_required(test_service_file, test_service)
-        if len(test_service_file_new_import_statements) > 0:
-            file_contents = utils.read_file_contents(test_service_file).split('\n')
-            for i in range(len(file_contents)):
-                line = file_contents[i]
-                if "import (" in line:
-                    file_contents = file_contents[:i+1] + test_service_file_new_import_statements + file_contents[i+1:]
-                    file_contents = '\n'.join(file_contents)
-                    utils.write_to_file(file_contents, test_service_file)
-                    break
-
-            # ignore 0th element as ctx is not used in test_case input
+        fix_import_statements(test_service_file, test_service)
+        
+        # ignore 0th element as ctx is not used in test_case input
         inputs = form_default_arguments(test_service_input_argument_list[1:], func_name)
         outputs = form_default_arguments(test_service_output_argument_list, func_name)    
         test_case = template.TEST_CASE_DICT(func_name, get_next_test_case_id(), inputs, outputs, [])
@@ -932,18 +951,7 @@ def main():
         ut_test_case_dict = re_assign_test_case_ids(ut_test_case_dict)
         test_cases = form_ut_test_cases(ut_test_case_dict, True)
         utils.append_to_file(test_cases, ut_test_cases_file)
-
-        test_case_file_new_import_statements = check_if_new_import_required(ut_test_cases_file, test_cases)
-        if len(test_case_file_new_import_statements) > 0:
-            file_contents = utils.read_file_contents(ut_test_cases_file).split('\n')
-            for i in range(len(file_contents)):
-                line = file_contents[i]
-                if "import (" in line:
-                    file_contents = file_contents[:i+1] + test_case_file_new_import_statements + file_contents[i+1:]
-                    file_contents = '\n'.join(file_contents)
-                    utils.write_to_file(file_contents, ut_test_cases_file)
-                    break
-
+        fix_import_statements(ut_test_cases_file, test_cases)
         
         if os.path.isfile(constants.CWD+"/tests/test_cases/auto_generated_test_cases.go"):
             os.system("rm tests/test_cases/auto_generated_test_cases.go")
