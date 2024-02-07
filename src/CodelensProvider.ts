@@ -8,7 +8,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 	public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
 
 	constructor() {
-		this.regex = /func \(s \*([a-zA-Z0-9]*)Service\) ([a-zA-Z]*)\(/g;
+		this.regex = /func \(s \*([a-zA-Z0-9]*)Service\) ([a-zA-Z0-9]*)\(/g;
 
 		vscode.workspace.onDidChangeConfiguration((_) => {
 			this._onDidChangeCodeLenses.fire();
