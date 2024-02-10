@@ -18,6 +18,28 @@ all_mock_functions = {
     "invalid": {}
 }
 
+def get_all_possible_combinations(initial_arr: List[str], possiblities: List[List[tuple]], combinations: List[List[tuple]], duplicates: List[bool]):
+    n: int = len(initial_arr)
+    if not duplicates[n-1]:
+        for k in range(len(possiblities[n-1])):
+            new_arr = deepcopy(initial_arr)
+            new_arr[n-1] = possiblities[n-1][k]
+            combinations.append(new_arr)
+        n -= 1
+    else:
+        combinations.append(initial_arr)
+
+    for i in range(n-1, -1, -1):
+        m: int = len(combinations)
+        for j in range(0, m):
+            arr = combinations[j]
+            for k in range(len(possiblities[i])):
+                new_arr = deepcopy(arr)
+                new_arr[i] = possiblities[i][k]
+                combinations.append(new_arr)
+    if len(initial_arr) != n:
+        combinations.append(initial_arr)
+
 def fix_import_statements(file_path, content):
     test_service_file_new_import_statements = check_if_new_import_required(file_path, content)
     if len(test_service_file_new_import_statements) > 0:
@@ -43,19 +65,6 @@ def fix_import_statements(file_path, content):
         if not import_statements_found:
             logging.error("import statements not found", exc_info = True)
             raise Exception("import statements not found")
-
-
-def get_all_possible_combinations(initial_arr: List[str], possiblities: List[List[tuple]], combinations: List[List[tuple]]):
-	n: int = len(initial_arr)
-	combinations.append(initial_arr)
-	for i in range(0, n):
-		m: int = len(combinations)
-		for j in range(0, m):
-			arr = combinations[j]
-			for k in range(len(possiblities[i])):
-				new_arr = deepcopy(arr)
-				new_arr[i] = possiblities[i][k]
-				combinations.append(new_arr)
 
 def get_next_test_case_id():
     constants.TEST_CASE_ID +=  1
@@ -626,37 +635,37 @@ def get_primary_id_and_type(arg: str):
 
 def other_possible_arg(output_param: str):
     if output_param.startswith("fmt.Errorf"):
-        return ["nil"]
+        return ["nil"], False
     if "errorString" in output_param:
-        return ["nil"]
+        return ["nil"], False
     if output_param  ==  "txObj":
-        return ["nil"]
+        return ["nil"], True
     if output_param == "true":
-        return ["false"]
+        return ["false"], True
     if output_param == "false":
-        return ["true"]
+        return ["true"], True
     if output_param.startswith("GetHttpReponse(") or output_param.startswith("GetHttpReponseInterface("):
-        return ["nil"]
+        return ["nil"], True
     if output_param.startswith("resources.ServiceResult"):
-        return ["resources.ServiceResult{\n\t\t\t\t\t\t\tIsError: false,\n\t\t\t\t\t\t\tCode:    200,\n\t\t\t\t\t\t}"]
+        return ["resources.ServiceResult{\n\t\t\t\t\t\t\tIsError: false,\n\t\t\t\t\t\t\tCode:    200,\n\t\t\t\t\t\t}"], True
     
     if not (output_param.startswith("models.") or output_param.startswith("resources.") or output_param.startswith("[]models.") or output_param.startswith("[]resources.")):
-        return []
+        return [], True
     primary_key, type_name, found_primay_key = get_primary_id_and_type(output_param)
     default_val = None
     if found_primay_key:
         default_val = form_default_arguments([type_name], "")[0]
 
     if found_primay_key and ("[]models." in output_param or "[]resources." in output_param):
-        return [output_param[:-1]+"\n{},\n}"]
+        return [output_param[:-1]+"\n{},\n}"], True
     # if found_primay_key and ("[]models." in output_param or "[]resources." in output_param):
-    #     return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n"+ primary_key + f": {default_val},\n" + "},\n}"]
+    #     return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n"+ primary_key + f": {default_val},\n" + "},\n}"], True
     elif found_primay_key and ("models." in output_param or "resources." in output_param):
-        return [output_param[:-1]+"\n"+ primary_key + f": {default_val}" + ",\n}"]
+        return [output_param[:-1]+"\n"+ primary_key + f": {default_val}" + ",\n}"], True
     elif "[]models." in output_param or "[]resources." in output_param:
-        return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n},\n}"]
+        return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n},\n}"], True
     elif "models." in output_param or "resources." in output_param:
-        return []
+        return [], True
     logging.error(f"unhandled: {output_param}", exc_info = True)
     raise Exception(f"unhandled: {output_param}")
 
@@ -676,18 +685,28 @@ def check_test_case_already_available(test_case_q: List[template.TEST_CASE_DICT]
                 break
     return already_available
 
+def add_mock_to_list(new_mock_func: template.MOCK_FUNC_DICT):
+    invalid = "invalid"
+    if all_mock_functions[invalid].get(new_mock_func.interface_name) is None:
+        all_mock_functions[invalid][new_mock_func.interface_name] = {}
+    if all_mock_functions[invalid][new_mock_func.interface_name].get(new_mock_func.mock_func_name) is None:
+        all_mock_functions[invalid][new_mock_func.interface_name][new_mock_func.mock_func_name] = new_mock_func
+
+
 def mock_other_possible_test_cases(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT, mock_func: template.MOCK_FUNC_DICT, is_output_used: List[bool]):
     if len(is_output_used) == 0:
         return test_case_q
-    combinations: List[List[str]] = []
-    other_output_possibilites = []
-    for i in range(len(mock_func.mock_func_outputs)):
+    n = len(mock_func.mock_func_outputs)
+    other_output_possibilites, duplicates = [[]]*n, [True]*n
+    for i in range(n):
         if is_output_used[i]:
-            other_output_possibilites.append(other_possible_arg(mock_func.mock_func_outputs[i]))
+            other_output_possibilites[i], duplicates[i] = other_possible_arg(mock_func.mock_func_outputs[i])
         else:
-            other_output_possibilites.append([])
+            other_output_possibilites[i] = []
         
-    get_all_possible_combinations(mock_func.mock_func_outputs, other_output_possibilites, combinations)
+    combinations: List[List[str]] = []
+    get_all_possible_combinations(mock_func.mock_func_outputs, other_output_possibilites, combinations, duplicates)
+
     combinations = combinations[1:]
     for possible_output in combinations:
         test_case_copy = None
@@ -705,13 +724,6 @@ def mock_other_possible_test_cases(test_case_q: List[template.TEST_CASE_DICT], u
             test_case_q.append(test_case_copy)
     
     return test_case_q
-
-def add_mock_to_list(new_mock_func: template.MOCK_FUNC_DICT):
-    invalid = "invalid"
-    if all_mock_functions[invalid].get(new_mock_func.interface_name) is None:
-        all_mock_functions[invalid][new_mock_func.interface_name] = {}
-    if all_mock_functions[invalid][new_mock_func.interface_name].get(new_mock_func.mock_func_name) is None:
-        all_mock_functions[invalid][new_mock_func.interface_name][new_mock_func.mock_func_name] = new_mock_func
 
 
 def get_output_param_usage(mock_func_call_output_content):
@@ -938,7 +950,8 @@ def main():
         test_case_q = [test_case]
         
         for i in range(len(inputs)):
-            for arg in other_possible_arg(inputs[i]):
+            other_possible_args, _ = other_possible_arg(inputs[i])
+            for arg in other_possible_args:
                 input_params = deepcopy(inputs)
                 test_case_copy = deepcopy(test_case)
                 input_params[i] = arg
@@ -977,3 +990,4 @@ def main():
         print(e)
 if __name__  ==  "__main__":
     main()
+
