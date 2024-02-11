@@ -633,41 +633,48 @@ def get_primary_id_and_type(arg: str):
     path = get_file_path_by_struct(type = struct_type, struct_name = struct_name)
     return get_struct_name_type(file_path = path, struct_name = struct_name)
 
-def other_possible_arg(output_param: str):
-    if output_param.startswith("fmt.Errorf"):
+
+def other_possible_arg(param: str):
+    if param.startswith("fmt.Errorf"):
         return ["nil"], False
-    if "errorString" in output_param:
+    if "errorString" in param:
         return ["nil"], False
-    if output_param  ==  "txObj":
+    if param  ==  "txObj":
         return ["nil"], True
-    if output_param == "true":
+    if param == "true":
         return ["false"], True
-    if output_param == "false":
+    if param == "false":
         return ["true"], True
-    if output_param.startswith("GetHttpReponse(") or output_param.startswith("GetHttpReponseInterface("):
+    if param.startswith("GetHttpReponse(") or param.startswith("GetHttpReponseInterface("):
         return ["nil"], True
-    if output_param.startswith("resources.ServiceResult"):
+    if param.startswith("resources.ServiceResult"):
         return ["resources.ServiceResult{\n\t\t\t\t\t\t\tIsError: false,\n\t\t\t\t\t\t\tCode:    200,\n\t\t\t\t\t\t}"], True
+    if param == "[]uint64":
+        return ["[]uint64{1}"], True
+    if param == "[]string":
+        return ['[]string{"crm"}'], True
     
-    if not (output_param.startswith("models.") or output_param.startswith("resources.") or output_param.startswith("[]models.") or output_param.startswith("[]resources.")):
+    if not (param.startswith("models.") or param.startswith("resources.") or param.startswith("[]models.") or param.startswith("[]resources.")):
         return [], True
-    primary_key, type_name, found_primay_key = get_primary_id_and_type(output_param)
+    primary_key, type_name, found_primay_key = get_primary_id_and_type(param)
     default_val = None
     if found_primay_key:
         default_val = form_default_arguments([type_name], "")[0]
 
-    if found_primay_key and ("[]models." in output_param or "[]resources." in output_param):
-        return [output_param[:-1]+"\n{},\n}"], True
-    # if found_primay_key and ("[]models." in output_param or "[]resources." in output_param):
-    #     return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n"+ primary_key + f": {default_val},\n" + "},\n}"], True
-    elif found_primay_key and ("models." in output_param or "resources." in output_param):
-        return [output_param[:-1]+"\n"+ primary_key + f": {default_val}" + ",\n}"], True
-    elif "[]models." in output_param or "[]resources." in output_param:
-        return [output_param[:-1]+"\n{},\n}",  output_param[:-1]+"\n{\n},\n}"], True
-    elif "models." in output_param or "resources." in output_param:
+    if found_primay_key and ("[]models." in param or "[]resources." in param):
+        return [param[:-1]+"\n{},\n}"], True
+    # if found_primay_key and ("[]models." in param or "[]resources." in param):
+    #     return [param[:-1]+"\n{},\n}",  param[:-1]+"\n{\n"+ primary_key + f": {default_val},\n" + "},\n}"], True
+    elif found_primay_key and ("models." in param or "resources." in param):
+        return [param[:-1]+"\n"+ primary_key + f": {default_val}" + ",\n}"], True
+    elif "[]models." in param or "[]resources." in param:
+        return [param[:-1]+"\n{},\n}",  param[:-1]+"\n{\n},\n}"], True
+    elif "models." in param or "resources." in param:
         return [], True
-    logging.error(f"unhandled: {output_param}", exc_info = True)
-    raise Exception(f"unhandled: {output_param}")
+    logging.error(f"unhandled: {param}", exc_info = True)
+    raise Exception(f"unhandled: {param}")
+
+
 
 def check_test_case_already_available(test_case_q: List[template.TEST_CASE_DICT], ut_test_case_dict: template.UT_TEST_CASES_DICT, test_case: template.TEST_CASE_DICT):
     if not test_case:
@@ -920,6 +927,7 @@ def main():
         utils.initialize_constants()
         utils.initialize_interface_file_name_map()
         utils.initialize_struct_file_name_map()
+        
         ut_test_cases_file = constants.CWD+f"/tests/test_cases/{file_name.split('.go')[0]}_test_cases.go"
         if not os.path.isfile(ut_test_cases_file):
             logging.info(f"Test cases file not found: {ut_test_cases_file} creating new file")
@@ -958,8 +966,8 @@ def main():
                 test_case_copy.inputs = input_params
                 test_case_copy.test_case_id = get_next_test_case_id()
                 test_case_q.append(test_case_copy)
+                
         ut_test_case_dict = None
-
         ut_test_case_dict = auto_generate_test_cases(test_case_q =  test_case_q, func_name = func_name)
         ut_test_case_dict = re_assign_test_case_ids(ut_test_case_dict)
         test_cases = form_ut_test_cases(ut_test_case_dict, True)
