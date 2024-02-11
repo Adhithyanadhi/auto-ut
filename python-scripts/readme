@@ -3,8 +3,11 @@ Setup:
 - python3 config.py --setup
 
 Requirements:
-- resources.TestCase
+- github.com/stretchr/testify: ^v1.8.4
+- vscode: "^1.86.0"
+- requires: resources.TestCase
 - proper path to lead env in config.go
+
 
 Unhandled Cases
 - interface type conversion. Eg: Data.(string)
