@@ -18,7 +18,9 @@ all_mock_functions = {
     "invalid": {}
 }
 
-def get_all_possible_combinations(initial_arr: List[str], possiblities: List[List[tuple]], combinations: List[List[tuple]], duplicates: List[bool]):
+def get_all_possible_combinations(initial_arr: List[str], possiblities: List[List[tuple]], duplicates: List[bool]):
+    # initial array should be returnd as the 0th element
+    combinations: List[List[tuple]] = []
     n: int = len(initial_arr)
     if not duplicates[n-1]:
         for k in range(len(possiblities[n-1])):
@@ -38,7 +40,8 @@ def get_all_possible_combinations(initial_arr: List[str], possiblities: List[Lis
                 new_arr[i] = possiblities[i][k]
                 combinations.append(new_arr)
     if len(initial_arr) != n:
-        combinations.append(initial_arr)
+        combinations = [initial_arr] + combinations
+    return combinations
 
 def fix_import_statements(file_path, content):
     test_service_file_new_import_statements = check_if_new_import_required(file_path, content)
@@ -648,7 +651,7 @@ def other_possible_arg(param: str):
     if param.startswith("GetHttpReponse(") or param.startswith("GetHttpReponseInterface("):
         return ["nil"], True
     if param.startswith("resources.ServiceResult"):
-        return ["resources.ServiceResult{\n\t\t\t\t\t\t\tIsError: false,\n\t\t\t\t\t\t\tCode:    200,\n\t\t\t\t\t\t}"], True
+        return ["resources.ServiceResult{\n\t\t\t\t\t\t\tIsError: false,\n\t\t\t\t\t\t\tCode:    200,\n\t\t\t\t\t\t}"], False
     if param == "[]uint64":
         return ["[]uint64{1}"], True
     if param == "[]string":
@@ -711,8 +714,7 @@ def mock_other_possible_test_cases(test_case_q: List[template.TEST_CASE_DICT], u
         else:
             other_output_possibilites[i] = []
         
-    combinations: List[List[str]] = []
-    get_all_possible_combinations(mock_func.mock_func_outputs, other_output_possibilites, combinations, duplicates)
+    combinations: List[List[str]] = get_all_possible_combinations(mock_func.mock_func_outputs, other_output_possibilites, duplicates)
 
     combinations = combinations[1:]
     for possible_output in combinations:

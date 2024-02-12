@@ -7,6 +7,7 @@ Requirements:
 - vscode: "^1.86.0"
 - requires: resources.TestCase
 - proper path to lead env in config.go
+- add interface_map.json, struct_map.json in .gitignore
 
 
 Unhandled Cases
