@@ -3,7 +3,7 @@
     "name": "auto-ut",
     "displayName": "Go Auto UT",
     "description": "Automatic UT generation for GoLang",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "engines": {
         "vscode": "^1.86.0"
     },
