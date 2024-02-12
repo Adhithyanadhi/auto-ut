@@ -97,7 +97,7 @@ func Test%s(t *testing.T) {
 	for _, test := range test_cases.%sTestCases {
 		fmt.Println("Case - ", test.Case)
 		tests.InitializeMockFunctions(test.MockFunctions, ctx)
-		%s := %s.%s(ctx, %s)
+		%s %s %s.%s(ctx, %s)
 		%s
 	}
 }

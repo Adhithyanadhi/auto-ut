@@ -211,10 +211,15 @@ def generate_test_service(func_name, interface_name, test_service_input_argument
     func_output_parameters = ', '.join(output_parameter_list)
     assert_statements = join_list('\n', test_service_output_assert_statement_list)
     
+    assignment_operator = ":="
+    if len(func_output_parameters) == 0:
+        assignment_operator = ""    
+    
+    init = ""
     if constants.SERVICE_NAME == "tap-crm-lead-management-backend":
-        test_service = template.TEST_FUNC_TEMPLATE %(func_name, func_name, "Init()\n", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
-    else:        
-        test_service = template.TEST_FUNC_TEMPLATE %(func_name, func_name, "", func_name, func_output_parameters, interface_name, func_name, func_input_parameters, assert_statements)
+        init = "Init()\n"
+
+    test_service = template.TEST_FUNC_TEMPLATE %(func_name, func_name, init, func_name, func_output_parameters, assignment_operator, interface_name, func_name, func_input_parameters, assert_statements)
     return test_service
 
 
