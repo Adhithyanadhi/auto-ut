@@ -138,11 +138,15 @@ def get_input_output_contents(func_definition):
     if len(input_contents) > 2:
         logging.error("unhandled: input contents cannot have len > 2 " + input_contents, exc_info = True)
         raise Exception("unhandled: input contents cannot have len > 2 " + input_contents)
+    if len(input_contents) == 2:
+        input_contents = input_contents[1]
+    else:
+        return ""
     
     output_contents = output_contents.strip()
     if len(output_contents) and output_contents[-1]  ==  ')':
         output_contents = output_contents[:-1]
-    return input_contents[1], output_contents
+    return input_contents, output_contents
 
 def get_output_parameters(output_contents):
     if not output_contents:
@@ -160,6 +164,8 @@ def get_output_parameters(output_contents):
     return test_service_output_argument_list
 
 def get_input_parameters(input_contents):
+    if not input_contents:
+        return []
     input_arguments_with_variable_name_list = input_contents.split(',')
     variable_type = None
     test_service_input_argument_list = []
