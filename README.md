@@ -41,6 +41,10 @@ Initial release AutoUT.
 
 Minor bugfixes
 
+### 0.0.8
+
+Handled empty function input and output arguments.
+
 ## For more information
 
 * [GitHub](https://github.com/Adhithyanadhi/auto-ut)
