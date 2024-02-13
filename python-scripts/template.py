@@ -53,6 +53,7 @@ TEST_CASE_TEMPLATE = """
 		ExpectedOutputs: []interface{}{
 			%s
 		},
+		RequestId : uuid.New().String(),
 		MockFunctions: []func(ctx tapcontext.TContext){
 			%s
 		},
@@ -95,7 +96,8 @@ func Test%s(t *testing.T) {
 	%s
 	var ctx = tapcontext.NewTapContext()
 	for _, test := range test_cases.%sTestCases {
-		fmt.Println("Case - ", test.Case)
+		ctx.RequestID = test.RequestId
+		fmt.Println("Case - ", test.Case, " request_id: ", test.RequestId)
 		tests.InitializeMockFunctions(test.MockFunctions, ctx)
 		%s %s %s.%s(ctx, %s)
 		%s
