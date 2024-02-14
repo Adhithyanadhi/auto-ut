@@ -613,12 +613,12 @@ def get_struct_name_type(file_path: str, struct_name: str):
             struct_pattern, struct_content = struct_pattern.strip(), struct_content.strip()
             primary_key = structs[i+1].strip().split('\n')[0].strip()
             if len(primary_key.split(' ')) < 2:
-                val = int(input(f"Check struct {struct_name} \n 1. modify and re-rerun \n 2. continue without primary key validation.\n") )
-                print("continuing...")
-                if val == 1:
-                    raise Exception(f"Check struct {struct_name}")
-                elif val == 2:
-                    return ["", "", False]
+                # val = int(input(f"Check struct {struct_name} \n 1. modify and re-rerun \n 2. continue without primary key validation.\n") )
+                # print("continuing...")
+                # if val == 1:
+                #     raise Exception(f"Check struct {struct_name}")
+                # elif val == 2:
+                return ["", "", False]
                 
             var_name_type = list(set(re.compile(ut_regex.VARIABLE_TYPE).findall(primary_key)))[0]
             if len(var_name_type) !=  2:
